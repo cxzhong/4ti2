@@ -24,30 +24,34 @@ void printVersionInfo();
 void printVector(vector, int);
 void printListVector(listVector*, int);
 void printVectorToFile(FILE*, vector, int);
-void printListVectorToFile(char*, listVector*, int);
-void printSubsetOfListVectorToFile(char*, listVector*, vector, int);
-void printListVectorWithoutColumnToFile(char*, listVector*, int, int);
-void printListVectorWithAdditionalColumnToFile(char*, listVector*, int, int, 
-					       int);
-void printTransposedListVectorToFile(char*, listVector*, int);
+void printListVectorToFile(const char*, listVector*, int);
+void printSubsetOfListVectorToFile(const char*, listVector*, vector, int);
+void printListVectorWithoutColumnToFile(const char*, listVector*, int, int);
+void printListVectorWithAdditionalColumnToFile(const char*, listVector*, int,
+					       int, int);
+void printTransposedListVectorToFile(const char*, listVector*, int);
 void printVectorToFileWithBrackets(FILE*, vector, int);
 void printBinomialToFile(FILE*, vector, int, char**);
-void printListBinomialsToFile(char*, listVector*, int, char**);
+void printListBinomialsToFile(const char*, listVector*, int, char**);
 void printMonomialToFile(FILE*, vector, int, char**);
-void printListMonomialsAndBinomialsToFile(char*, listVector*, int, char**);
+void printListMonomialsAndBinomialsToFile(const char*, listVector*, int,
+					  char**);
 void printMatrix(vector, int, int);
 void printVectorToFileMaple(FILE*, vector, int);
-void printListVectorMaple(char*, listVector*, int);
-void printListVectorMacaulay2(char*, listVector*, int);
-void print3wayTables(char*, listVector*, int, int, int, int);
+void printListVectorMaple(const char*, listVector*, int);
+void printListVectorMacaulay2(const char*, listVector*, int);
+void print3wayTables(const char*, listVector*, int, int, int, int);
 void printL1NormOfListVector(listVector*, int);
-void printListVectorWithGivenDegreesToFile(char*, listVector*, int, int, int);
+void printListVectorWithGivenDegreesToFile(const char*, listVector*, int,
+					   int, int);
 void printSupportsOfListVector(listVector*, int);
 void printTypesOfListVector(listVector*, int, int);
-void printListVectorWithGivenSupportsToFile(char*, listVector*, int, int, int);
-void printListVectorWithGivenNonzeroEntryToFile(char*, listVector*, int, int);
-void writeResult(listVector*, int, char*, char*, int);
-void printListRepresentativesToFile(char*, listOrbit*, int);
+void printListVectorWithGivenSupportsToFile(const char*, listVector*, int,
+					    int, int);
+void printListVectorWithGivenNonzeroEntryToFile(const char*, listVector*, int,
+						int);
+void writeResult(listVector*, int, const char*, const char*, int);
+void printListRepresentativesToFile(const char*, listOrbit*, int);
 void printRationalVector(rationalVector*, int);
 void printRationalVectorToFileWithoutBrackets(FILE*, rationalVector*, int);
 

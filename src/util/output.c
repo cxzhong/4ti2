@@ -37,7 +37,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #include "banner.h"
 
 /* ----------------------------------------------------------------- */
-listVector* readListVector(int *numOfVars, char *fileName) {
+listVector* readListVector(int *numOfVars, const char *fileName) {
   int numOfVectors;
   listVector *basis, *endBasis;
   vector b;

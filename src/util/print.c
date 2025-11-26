@@ -82,7 +82,8 @@ void printVectorToFile(FILE *out, vector v, int numOfVars) {
   return ;
 }
 /* ----------------------------------------------------------------- */
-void printListVectorToFile(char* fileName, listVector* basis, int numOfVars) {
+void printListVectorToFile(const char* fileName, listVector* basis,
+			   int numOfVars) {
   int len;
   FILE* out;
 
@@ -106,8 +107,8 @@ void printListVectorToFile(char* fileName, listVector* basis, int numOfVars) {
   fclose(out);
   return ;
 }
-/* ----------------------------------------------------------------- */
-void printSubsetOfListVectorToFile(char* fileName, listVector* basis, 
+/* ------------------------------------------------------------------------ */
+void printSubsetOfListVectorToFile(const char* fileName, listVector* basis,
 				   vector ind, int numOfVars) {
   int len,len2,j;
   FILE* out;
@@ -147,7 +148,8 @@ void printVectorWithoutColumnToFile(FILE *out, vector v, int ind,
   return ;
 }
 /* ----------------------------------------------------------------- */
-void printListVectorWithoutColumnToFile(char* fileName, listVector* basis, 
+void printListVectorWithoutColumnToFile(const char* fileName,
+					listVector* basis,
 					int ind, int numOfVars) {
   int len;
   FILE* out;
@@ -185,7 +187,7 @@ void printVectorWithAddtionalColumnToFile(FILE *out, vector v, int ind,
   return ;
 }
 /* ----------------------------------------------------------------- */
-void printListVectorWithAdditionalColumnToFile(char* fileName, 
+void printListVectorWithAdditionalColumnToFile(const char* fileName,
 				 	      listVector* basis, 
 					      int ind, int val,
 					      int numOfVars) {
@@ -214,7 +216,7 @@ void printListVectorWithAdditionalColumnToFile(char* fileName,
   return ;
 }
 /* ----------------------------------------------------------------- */
-void printTransposedListVectorToFile(char* fileName, listVector* basis, 
+void printTransposedListVectorToFile(const char* fileName, listVector* basis,
 				     int numOfVars) {
   int i,len;
   listVector *tmp;
@@ -318,7 +320,7 @@ void printBinomialToFile(FILE *out, vector v, int numOfVars, char** labels) {
   return ;
 }
 /* ----------------------------------------------------------------- */
-void printListBinomialsToFile(char* fileName, listVector* basis, 
+void printListBinomialsToFile(const char* fileName, listVector* basis,
 			      int numOfVars, char** labels) {
   FILE* out;
 
@@ -377,7 +379,8 @@ void printMonomialToFile(FILE *out, vector v, int numOfVars, char** labels) {
   return ;
 }
 /* ----------------------------------------------------------------- */
-void printListMonomialsAndBinomialsToFile(char* fileName, listVector* basis, 
+void printListMonomialsAndBinomialsToFile(const char* fileName,
+					  listVector* basis,
 					  int numOfVars, char** labels) {
   FILE* out;
 
@@ -455,7 +458,8 @@ void printVectorToFileMacaulay2(FILE *out, vector v, int numOfVars) {
   return ;
 }
 /* ----------------------------------------------------------------- */
-void printListVectorMaple(char* fileName, listVector* basis, int numOfVars) {
+void printListVectorMaple(const char* fileName, listVector* basis,
+			  int numOfVars) {
   FILE* out;
 
   if (!(out = fopen(fileName,"w"))) {
@@ -480,7 +484,7 @@ void printListVectorMaple(char* fileName, listVector* basis, int numOfVars) {
   return ;
 }
 /* ----------------------------------------------------------------- */
-void printListVectorMacaulay2(char* fileName, listVector* basis, 
+void printListVectorMacaulay2(const char* fileName, listVector* basis,
 			      int numOfVars) {
   FILE* out;
 
@@ -506,8 +510,8 @@ void printListVectorMacaulay2(char* fileName, listVector* basis,
   return ;
 }
 /* ----------------------------------------------------------------- */
-void print3wayTables(char* fileName, listVector* basis, int x, int y, 
-		     int z, int numOfVars) {
+void print3wayTables(const char* fileName, listVector* basis, int x,
+		     int y, int z, int numOfVars) {
   int i,j,k;
   vector v;
   FILE* out;
@@ -583,7 +587,7 @@ void printL1NormOfListVector(listVector *basis, int numOfVars) {
   return;
 }
 /* ----------------------------------------------------------------- */
-void printListVectorWithGivenDegreesToFile(char *outFileName, 
+void printListVectorWithGivenDegreesToFile(const char *outFileName,
 					   listVector *basis, int numOfVars,
 					   int lowdegree, int highdegree){
   int i,s,len;
@@ -647,7 +651,7 @@ void printSupportsOfListVector(listVector *basis, int numOfVars) {
   return;
 }
 /* ----------------------------------------------------------------- */
-void printListVectorWithGivenSupportsToFile(char *outFileName, 
+void printListVectorWithGivenSupportsToFile(const char *outFileName,
 					    listVector *basis, int numOfVars,
 					    int lowdegree, int highdegree){
   int i,s,len;
@@ -724,7 +728,7 @@ void printTypesOfListVector(listVector *basis, int sizeOfLayer,
   return;
 }
 /* ----------------------------------------------------------------- */
-void printListVectorWithGivenNonzeroEntryToFile(char *outFileName, 
+void printListVectorWithGivenNonzeroEntryToFile(const char *outFileName,
 						listVector *basis, 
 						int numOfVars,
 						int coord){
@@ -760,8 +764,8 @@ void printListVectorWithGivenNonzeroEntryToFile(char *outFileName,
   return;
 }
 /* ----------------------------------------------------------------- */
-void writeResult(listVector *basis, int numOfVars, char *fileName, 
-		 char *basisType, int infoLevel) {
+void writeResult(listVector *basis, int numOfVars, const char *fileName,
+		 const char *basisType, int infoLevel) {
   const char *infoMessage="undefined";
   const char *outExtension="";
   char *outFileName=NULL;
@@ -803,7 +807,7 @@ void writeResult(listVector *basis, int numOfVars, char *fileName,
   return;
 }
 /* ----------------------------------------------------------------- */
-void printListRepresentativesToFile(char* fileName, listOrbit* basis, 
+void printListRepresentativesToFile(const char* fileName, listOrbit* basis,
 				    int numOfVars) {
   int len;
   FILE* out;
