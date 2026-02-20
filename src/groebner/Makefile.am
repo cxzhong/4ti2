@@ -20,13 +20,13 @@
 
 bin_PROGRAMS = 
 bin_PROGRAMS += 4ti2int32 4ti2int64
-if HAVE_GMP_ARB
+if HAVE_GMP
 bin_PROGRAMS += 4ti2gmp
 endif
 
 lib_LTLIBRARIES = 
 lib_LTLIBRARIES += lib4ti2int32.la lib4ti2int64.la
-if HAVE_GMP_ARB
+if HAVE_GMP
 lib_LTLIBRARIES += lib4ti2gmp.la
 endif
 
@@ -297,7 +297,7 @@ lib4ti2int64_la_SOURCES = $(lib4ti2sources)
 
 # Arbitrary precision flags.
 # 4ti2 uses GMP (GLPL), an arbitrary precision arithmetic library.
-if HAVE_GMP_ARB
+if HAVE_GMP
 4ti2gmp_LDADD = lib4ti2gmp.la
 4ti2gmp_CPPFLAGS = -D_4ti2_GMP_ $(GMP_CFLAGS)
 4ti2gmp_SOURCES = $(4ti2sources)

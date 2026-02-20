@@ -120,7 +120,6 @@ fi
 AM_CONDITIONAL([ENABLE_GROEBNER], [ test x${enable_groebner} = xyes ])
 
 AM_CONDITIONAL([HAVE_GMP], [test -n "${GMP_LIBS}"])
-AM_CONDITIONAL([HAVE_GMP_ARB], [test -n "${GMP_LIBS}"])
 
 if test -n "${GMP_LIBS}" ; then 
 

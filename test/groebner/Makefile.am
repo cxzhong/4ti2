@@ -1,4 +1,4 @@
-if HAVE_GMP_ARB
+if HAVE_GMP
 SUBDIRS = gmp
 endif
 

@@ -1,7 +1,7 @@
 check_PROGRAMS = 
 check_PROGRAMS += qsolve_main rays_main circuits_main
 
-if HAVE_GMP_ARB
+if HAVE_GMP
 check_PROGRAMS += test_input_conversion_64_to_gmp test_input_conversion_gmp_to_64
 endif
 
