@@ -90,6 +90,8 @@ VectorArrayAPI::convert(const int32_t& v1, int64_t& v2)
 
 #ifdef _4ti2_HAVE_GMP
 
+#include "4ti2/gmp_integer.h"
+
 template <>
 inline
 void
@@ -103,7 +105,7 @@ inline
 void
 VectorArrayAPI::convert(const int64_t& v1, mpz_ptr& v2)
 {
-    mpz_set_si(v2, static_cast<long>(v1));
+    mpz_set_int64(v2, v1);
 }
 
 #ifdef _4ti2_GMP_
@@ -113,11 +115,11 @@ inline
 void
 VectorArrayAPI::convert(const IntegerType& v1, int64_t& v2)
 {
-    if (!mpz_fits_slong_p(v1.get_mpz_t())) {
+    if (!mpz_fits_int64_p(v1.get_mpz_t())) {
         std::cerr << "ERROR: number out of range.\n";
         exit(1);
     }
-    v2 = static_cast<int64_t>(mpz_get_si(v1.get_mpz_t()));
+    v2 = mpz_get_int64(v1.get_mpz_t());
 }
 
 template <>
@@ -156,11 +158,11 @@ inline
 void
 VectorArrayAPI::convert(const mpz_srcptr& v1, int64_t& v2)
 {
-    if (!mpz_fits_slong_p(v1)) {
+    if (!mpz_fits_int64_p(v1)) {
         std::cerr << "ERROR: number out of range.\n";
         exit(1);
     }
-    v2 = static_cast<int64_t>(mpz_get_si(v1));
+    v2 = mpz_get_int64(v1);
 }
 
 template <>
