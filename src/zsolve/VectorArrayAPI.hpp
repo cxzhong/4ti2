@@ -106,10 +106,10 @@ void
 convert(const mpz_srcptr& v1, int64_t& v2)
 {
     // TODO: Better precision exception information.
-    if (!mpz_fits_slong_p(v1)) {
+    if (!mpz_fits_int64_p(v1)) {
         throw PrecisionException(0);
     }
-    v2 = static_cast<int64_t>(mpz_get_si(v1));
+    v2 = mpz_get_int64(v1);
 }
 
 template <>
@@ -128,7 +128,7 @@ inline
 void
 convert(const int64_t& v1, mpz_ptr& v2)
 {
-    mpz_set_si(v2, static_cast<long>(v1));
+    mpz_set_int64(v2, v1);
 }
 
 template <>
@@ -160,10 +160,10 @@ inline
 void
 convert(const _4ti2_gmp_::Integer& v1, int64_t& v2)
 {
-    if (!mpz_fits_slong_p(v1.get_mpz_t())) {
+    if (!mpz_fits_int64_p(v1.get_mpz_t())) {
         throw PrecisionException(0);
     }
-    v2 = static_cast<int64_t>(mpz_get_si(v1.get_mpz_t()));
+    v2 = mpz_get_int64(v1.get_mpz_t());
 }
 
 template <>
