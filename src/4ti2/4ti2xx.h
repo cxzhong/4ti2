@@ -30,7 +30,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 #ifdef _4ti2_HAVE_GMP
 #include <gmp.h>
-#include <gmpxx.h>
 #endif
 
 struct _4ti2_matrix {
@@ -51,8 +50,8 @@ public:
     virtual void get_entry_int64_t(int r, int c, int64_t& value) const = 0;
 
 #ifdef _4ti2_HAVE_GMP
-    virtual void set_entry_mpz_class(int r, int c, const mpz_class& value) = 0;
-    virtual void get_entry_mpz_class(int r, int c, mpz_class& value) const = 0;
+    virtual void set_entry_mpz_ptr(int r, int c, mpz_srcptr value) = 0;
+    virtual void get_entry_mpz_ptr(int r, int c, mpz_ptr value) const = 0;
 #endif
 };
 

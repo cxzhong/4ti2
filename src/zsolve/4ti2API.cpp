@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 #include "4ti2/4ti2.h"
 #include "4ti2/4ti2xx.h"
+#include "4ti2/gmp_integer.h"
 #include "zsolve/ZSolveAPI.hpp"
 #include "zsolve/HilbertAPI.hpp"
 #include "zsolve/GraverAPI.hpp"
@@ -41,10 +42,8 @@ _4ti2_zsolve_create_state(_4ti2_precision prec)
         return new ZSolveAPI<int32_t>();
     case _4ti2_PREC_INT_64:
         return new ZSolveAPI<int64_t>();
-#ifdef _4ti2_HAVE_GMP
     case _4ti2_PREC_INT_ARB:
-        return new ZSolveAPI<mpz_class>();
-#endif
+        return new ZSolveAPI<_4ti2_gmp_::Integer>();
     default: 
         std::cerr << "ERROR: Undefined precision.\n";
         exit(1);
@@ -59,10 +58,8 @@ _4ti2_hilbert_create_state(_4ti2_precision prec)
         return new HilbertAPI<int32_t>();
     case _4ti2_PREC_INT_64:
         return new HilbertAPI<int64_t>();
-#ifdef _4ti2_HAVE_GMP
     case _4ti2_PREC_INT_ARB:
-        return new HilbertAPI<mpz_class>();
-#endif
+        return new HilbertAPI<_4ti2_gmp_::Integer>();
     default: 
         std::cerr << "ERROR: Undefined precision.\n";
         exit(1);
@@ -77,10 +74,8 @@ _4ti2_graver_create_state(_4ti2_precision prec)
         return new GraverAPI<int32_t>();
     case _4ti2_PREC_INT_64:
         return new GraverAPI<int64_t>();
-#ifdef _4ti2_HAVE_GMP
     case _4ti2_PREC_INT_ARB:
-        return new GraverAPI<mpz_class>();
-#endif
+        return new GraverAPI<_4ti2_gmp_::Integer>();
     default: 
         std::cerr << "ERROR: Undefined precision.\n";
         exit(1);

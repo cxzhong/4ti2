@@ -1,7 +1,7 @@
 # Subdirs where we run our test machinery
 CHECKLOCAL_SUBDIRS =
 
-if HAVE_GMP_WITH_CXX
+if HAVE_GMP_ARB
 CHECKLOCAL_SUBDIRS += gmp
 endif
 

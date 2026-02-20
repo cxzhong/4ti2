@@ -28,10 +28,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 #ifdef _4ti2_GMP_
 
-#include <gmp.h>
-#include <gmpxx.h>
-typedef mpz_class IntegerType;
-typedef mpq_class RationalType;
+#include "4ti2/gmp_integer.h"
+typedef _4ti2_gmp_::Integer IntegerType;
+typedef double RationalType;
 
 #elif defined(_4ti2_INT64_)
 

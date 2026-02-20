@@ -107,11 +107,6 @@ LT_INIT
 AC_LANG(C++)
 LB_CHECK_GMP(,,[AC_MSG_WARN([GNU MP not found.
 4ti2 will be built without support for arbitrary-precision computations.])])
-if test -z "${GMP_HAVE_CXX}" ; then 
-  AC_MSG_WARN([Unable to use the GNU MP C++ library.  
-Please make sure that GNU MP was configured with "--enable-cxx".
-4ti2 will be built without support for arbitrary-precision computations.])
-fi
 
 if test x${enable_groebner} = xyes ; then
 # Check for GLPK.
@@ -124,36 +119,15 @@ It is required for building the Groebner component of 4ti2.
 fi
 AM_CONDITIONAL([ENABLE_GROEBNER], [ test x${enable_groebner} = xyes ])
 
-AM_CONDITIONAL([HAVE_GMP_WITH_CXX], [test -n "${GMP_HAVE_CXX}"])
+AM_CONDITIONAL([HAVE_GMP], [test -n "${GMP_LIBS}"])
+AM_CONDITIONAL([HAVE_GMP_ARB], [test -n "${GMP_LIBS}"])
 
-if test -n "${GMP_HAVE_CXX}" ; then 
+if test -n "${GMP_LIBS}" ; then 
 
   # Definition for installed header file 4ti2_config.h
-  AC_DEFINE([_4ti2_HAVE_GMP], [], [Define if GMP (with C++ interface) is installed])
-
-  # Check whether we can convert between int32_t and int64_t and mpz_class (for the API).
-  save_CXXFLAGS=${CXXFLAGS}
-  CXXFLAGS="${CXXFLAGS} ${GMP_CFLAGS}"
-  save_LIBS="${LIBS}"
-  LIBS="${LIBS} ${GMP_LIBS}"
-  AC_MSG_CHECKING(whether we can convert between int32_t and mpz_class)
-  AC_LINK_IFELSE([AC_LANG_PROGRAM([[  #include <gmpxx.h>
-       #include <cstdint>
-    ]], [[  int32_t x = 815;
-       mpz_class y(x);
-    ]])],[ HAVE_MPZ_INT32_CONVERSION=yes;
-      AC_DEFINE(_4ti2_HAVE_MPZ_INT32_CONVERSION, 1, [Define if we can convert between int32_t and mpz_class]) ],[ HAVE_MPZ_INT32_CONVERSION=no ])
-  AC_MSG_RESULT(${HAVE_MPZ_INT32_CONVERSION})
-  AC_MSG_CHECKING(whether we can convert between int64_t and mpz_class)
-  AC_LINK_IFELSE([AC_LANG_PROGRAM([[  #include <gmpxx.h>
-       #include <cstdint>
-    ]], [[  int64_t x = 815;
-       mpz_class y(x);
-    ]])],[ HAVE_MPZ_INT64_CONVERSION=yes;
-      AC_DEFINE(_4ti2_HAVE_MPZ_INT64_CONVERSION, 1, [Define if we can convert between int64_t and mpz_class]) ],[ HAVE_MPZ_INT64_CONVERSION=no ])
-  AC_MSG_RESULT(${HAVE_MPZ_INT64_CONVERSION})
-  LIBS="${save_LIBS}"
-  CXXFLAGS="${save_CXXFLAGS}"
+  AC_DEFINE([_4ti2_HAVE_GMP], [], [Define if GMP C library is installed])
+  AC_DEFINE([_4ti2_HAVE_MPZ_INT32_CONVERSION], [1], [Define if we can convert between int32_t and GMP integers])
+  AC_DEFINE([_4ti2_HAVE_MPZ_INT64_CONVERSION], [1], [Define if we can convert between int64_t and GMP integers])
 fi
 
 GROEBNER_DEFAULT_EXECUTABLE=4ti2int64
