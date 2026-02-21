@@ -173,7 +173,7 @@ WalkAlgorithm::tvalue(const Binomial& b)
     if (b[costold_start]-b[costnew_start] == 0)
 	return 0;		// Avoid division by zero
     else 
-	return (RationalType)b[costold_start]/(b[costold_start]-b[costnew_start]);
+	return static_cast<double>(b[costold_start]) / static_cast<double>(b[costold_start]-b[costnew_start]);
 }
 
 void

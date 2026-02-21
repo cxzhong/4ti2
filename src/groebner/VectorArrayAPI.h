@@ -110,7 +110,7 @@ VectorArrayAPI::convert(const int64_t& v1, mpz_ptr& v2)
     mpz_set_int64(v2, v1);
 }
 
-#ifdef _4ti2_GMP_
+#ifdef FOURTITWO_GMP
 
 template <>
 inline

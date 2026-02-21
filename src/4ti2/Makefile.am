@@ -32,7 +32,7 @@ AM_CXXFLAGS = -I$(srcdir)/..
 lib4ti2common_la_SOURCES = 4ti2API.cpp
 
 if HAVE_GMP
-AM_CPPFLAGS = -D_4ti2_GMP_ ${GMP_CFLAGS}
+AM_CPPFLAGS = -DFOURTITWO_GMP ${GMP_CFLAGS}
 AM_LDFLAGS = ${GMP_LIBS}
 endif
 

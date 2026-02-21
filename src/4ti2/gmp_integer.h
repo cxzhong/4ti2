@@ -19,144 +19,241 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 */
 
-#ifndef _4ti2__gmp_integer_h_
-#define _4ti2__gmp_integer_h_
+#ifndef FOURTITWO_GMP_INTEGER_H
+#define FOURTITWO_GMP_INTEGER_H
 
 #include <gmp.h>
+#include <climits>
+#include <cstddef>
+#include <cstdint>
 #include <cstring>
+#include <ios>
 #include <istream>
 #include <ostream>
+#include <stdexcept>
 #include <string>
-#include <cstdint>
-#include <cstddef>
+#include <utility>
 
-// Portable helper: set mpz_t from int64_t using mpz_import (avoids sizeof(long) assumption).
-static inline void mpz_set_int64(mpz_ptr z, int64_t v)
+// ---------------------------------------------------------------------------
+// Portable int64_t <-> mpz_t helpers.
+// These never assume sizeof(long) == 8; they work correctly on both
+// LP64 (long = 64-bit) and LLP64/Windows (long = 32-bit).
+// ---------------------------------------------------------------------------
+
+// Set mpz_t from int64_t using mpz_import.
+inline void mpz_set_int64(mpz_ptr z, int64_t v)
 {
     // Two's-complement trick: avoids signed overflow when v == INT64_MIN.
     // -(v+1)+1 == -v for all v, but -(v+1) never overflows since v+1 >= INT64_MIN+1.
-    uint64_t uv = v < 0 ? (uint64_t)(-(v + 1)) + 1 : (uint64_t)v;
+    uint64_t uv = v < 0 ? static_cast<uint64_t>(-(v + 1)) + 1u
+                         : static_cast<uint64_t>(v);
     mpz_import(z, 1, 1, sizeof(uv), 0, 0, &uv);
     if (v < 0) mpz_neg(z, z);
 }
 
-// Portable helper: check if mpz_t value fits in int64_t (replaces mpz_fits_slong_p when sizeof(long) < 8).
-static inline int mpz_fits_int64_p(mpz_srcptr v)
+// Set mpz_t from uint64_t using mpz_import.
+inline void mpz_set_uint64(mpz_ptr z, uint64_t v)
+{
+    mpz_import(z, 1, 1, sizeof(v), 0, 0, &v);
+}
+
+// Check if mpz_t value fits in int64_t.
+inline int mpz_fits_int64_p(mpz_srcptr v)
 {
     if (mpz_sgn(v) == 0) return 1;
-    // mpz_sizeinbase may overestimate by at most 1.  Threshold is 65 (not 64) so that a
-    // value with exactly 64 real bits is not rejected before the exact mpz_export check below.
-    // Values reported as > 65 bits have at least 65 real bits, which exceeds int64_t range.
+    // mpz_sizeinbase(v, 2) may overestimate by 1: a reported size of N means
+    // the real bit-length is in [N-1, N].  We reject reported sizes > 65
+    // because real bit-length >= 65 exceeds int64_t range in all cases.
+    // A reported size of exactly 65 may correspond to real bit-length 64,
+    // which still needs the exact mpz_export check below.
     if (mpz_sizeinbase(v, 2) > 65) return 0;
-    // At most 65 reported bits means at most 65 real bits, requiring at most 2 uint64_t words.
-    // Use a 2-element buffer so mpz_export cannot write beyond it for these bounded values.
-    uint64_t buf[2];
-    size_t count;
+    // Export absolute value.  At most 65 real bits => at most 2 uint64_t words.
+    uint64_t buf[2] = {0, 0};
+    size_t count = 0;
     mpz_export(buf, &count, 1, sizeof(uint64_t), 0, 0, v);
     if (count == 0) return 1;
     if (count > 1) return 0;
-    // Positive: must be <= INT64_MAX (< 2^63); negative: magnitude must be <= 2^63.
-    return mpz_sgn(v) > 0 ? buf[0] <= (uint64_t)INT64_MAX
-                           : buf[0] <= (uint64_t)INT64_MAX + 1;
+    // Positive: must be <= INT64_MAX (2^63 - 1).
+    // Negative: magnitude must be <= 2^63.
+    return mpz_sgn(v) > 0 ? buf[0] <= static_cast<uint64_t>(INT64_MAX)
+                           : buf[0] <= static_cast<uint64_t>(INT64_MAX) + 1u;
 }
 
-// Portable helper: extract int64_t from mpz_t (caller must ensure mpz_fits_int64_p is true).
-static inline int64_t mpz_get_int64(mpz_srcptr v)
+// Extract int64_t from mpz_t.
+// Precondition: mpz_fits_int64_p(v) must be true.
+// If violated, returns 0 (no buffer overflow, but the result is meaningless).
+inline int64_t mpz_get_int64(mpz_srcptr v)
 {
-    uint64_t limb;
-    size_t count;
-    mpz_export(&limb, &count, 1, sizeof(limb), 0, 0, v);
+    // Use a 2-element buffer so that even if the precondition is violated,
+    // mpz_export cannot write past the end of the buffer.
+    uint64_t buf[2] = {0, 0};
+    size_t count = 0;
+    mpz_export(buf, &count, 1, sizeof(uint64_t), 0, 0, v);
     if (count == 0) return 0;
-    if (mpz_sgn(v) > 0) return (int64_t)limb;
-    // Two's-complement negation without overflow: -(limb-1)-1 handles limb==2^63 (INT64_MIN).
-    return -(int64_t)(limb - 1) - 1;
+    if (count > 1) return 0;  // precondition violated
+    uint64_t limb = buf[0];
+    if (mpz_sgn(v) > 0) return static_cast<int64_t>(limb);
+    // Two's-complement negation: -(limb-1)-1 handles limb == 2^63 (INT64_MIN).
+    return -static_cast<int64_t>(limb - 1) - 1;
 }
 
-namespace _4ti2_gmp_
+// Compare mpz_t with int64_t without heap allocation when possible.
+// Uses mpz_cmp_si for values that fit in long; falls back to mpz_import otherwise.
+inline int mpz_cmp_int64(mpz_srcptr z, int64_t v)
+{
+    if (v >= static_cast<int64_t>(LONG_MIN) && v <= static_cast<int64_t>(LONG_MAX)) {
+        return mpz_cmp_si(z, static_cast<long>(v));
+    }
+    mpz_t tmp;
+    mpz_init(tmp);
+    mpz_set_int64(tmp, v);
+    int result = mpz_cmp(z, tmp);
+    mpz_clear(tmp);
+    return result;
+}
+
+namespace FOURTITWO_GMP_INTEGER
 {
 
 class Integer
 {
 public:
-    Integer()
+    // -- Constructors / destructor ------------------------------------------
+
+    Integer() noexcept
     {
         mpz_init(value_);
     }
 
-    Integer(long long value)
+    // Non-explicit to support widespread template code like `T x = 0;`.
+    // NOLINTNEXTLINE(google-explicit-constructor)
+    Integer(long long value) noexcept
     {
         mpz_init(value_);
         mpz_set_int64(value_, static_cast<int64_t>(value));
     }
 
-    Integer(const Integer& other)
+    // Named factory for unsigned 64-bit values.
+    // A constructor overload would cause ambiguity with Integer(long long)
+    // in direct-initialization of int/long/unsigned int arguments, because
+    // int->long long and int->unsigned long long are conversions of equal rank.
+    static Integer from_uint64(uint64_t value) noexcept
+    {
+        Integer result;
+        mpz_set_uint64(result.value_, value);
+        return result;
+    }
+
+    Integer(const Integer& other) noexcept
     {
         mpz_init_set(value_, other.value_);
     }
 
-    Integer& operator=(const Integer& other)
+    Integer(Integer&& other) noexcept
     {
-        if (this != &other) {
-            mpz_set(value_, other.value_);
-        }
+        // Steal the mpz_t internals.
+        value_[0] = other.value_[0];
+        // Leave other in a valid empty state.
+        mpz_init(other.value_);
+    }
+
+    Integer& operator=(const Integer& other) noexcept
+    {
+        // mpz_set handles self-assignment correctly.
+        mpz_set(value_, other.value_);
         return *this;
     }
 
-    ~Integer()
+    Integer& operator=(Integer&& other) noexcept
+    {
+        mpz_swap(value_, other.value_);
+        return *this;
+    }
+
+    Integer& operator=(long long value) noexcept
+    {
+        mpz_set_int64(value_, static_cast<int64_t>(value));
+        return *this;
+    }
+
+    ~Integer() noexcept
     {
         mpz_clear(value_);
     }
 
-    void set_mpz(mpz_srcptr value)
+    friend void swap(Integer& a, Integer& b) noexcept
+    {
+        mpz_swap(a.value_, b.value_);
+    }
+
+    // -- Accessors ----------------------------------------------------------
+
+    void set_mpz(mpz_srcptr value) noexcept
     {
         mpz_set(value_, value);
     }
 
-    mpz_ptr get_mpz_t()
+    mpz_ptr get_mpz_t() noexcept
     {
         return value_;
     }
 
-    mpz_srcptr get_mpz_t() const
+    mpz_srcptr get_mpz_t() const noexcept
     {
         return value_;
     }
 
-    double get_d() const
+    double get_d() const noexcept
     {
         return mpz_get_d(value_);
     }
 
-    long get_si() const
+    // WARNING: returns long, which is 32-bit on LLP64/Windows.
+    // Prefer get_int64() for portable 64-bit extraction.
+    long get_si() const noexcept
     {
         return mpz_get_si(value_);
     }
 
-    explicit operator double() const
+    int64_t get_int64() const noexcept
+    {
+        return mpz_get_int64(value_);
+    }
+
+    bool fits_int64() const noexcept
+    {
+        return mpz_fits_int64_p(value_) != 0;
+    }
+
+    explicit operator double() const noexcept
     {
         return mpz_get_d(value_);
     }
 
-    Integer operator-() const
+    // -- Unary --------------------------------------------------------------
+
+    Integer operator-() const noexcept
     {
         Integer result;
         mpz_neg(result.value_, value_);
         return result;
     }
 
-    Integer& operator+=(const Integer& rhs)
+    // -- Compound assignment: Integer ---------------------------------------
+
+    Integer& operator+=(const Integer& rhs) noexcept
     {
         mpz_add(value_, value_, rhs.value_);
         return *this;
     }
 
-    Integer& operator-=(const Integer& rhs)
+    Integer& operator-=(const Integer& rhs) noexcept
     {
         mpz_sub(value_, value_, rhs.value_);
         return *this;
     }
 
-    Integer& operator*=(const Integer& rhs)
+    Integer& operator*=(const Integer& rhs) noexcept
     {
         mpz_mul(value_, value_, rhs.value_);
         return *this;
@@ -164,69 +261,72 @@ public:
 
     Integer& operator/=(const Integer& rhs)
     {
+        if (mpz_sgn(rhs.value_) == 0) {
+            throw std::domain_error("FOURTITWO_GMP_INTEGER::Integer: division by zero");
+        }
         mpz_tdiv_q(value_, value_, rhs.value_);
         return *this;
     }
 
     Integer& operator%=(const Integer& rhs)
     {
+        if (mpz_sgn(rhs.value_) == 0) {
+            throw std::domain_error("FOURTITWO_GMP_INTEGER::Integer: division by zero");
+        }
         mpz_tdiv_r(value_, value_, rhs.value_);
         return *this;
     }
 
-    friend Integer operator+(Integer lhs, const Integer& rhs)
+    // -- Compound assignment: long long (avoids Integer temporary) ----------
+
+    Integer& operator+=(long long rhs) noexcept
+    {
+        mpz_t tmp;
+        mpz_init(tmp);
+        mpz_set_int64(tmp, static_cast<int64_t>(rhs));
+        mpz_add(value_, value_, tmp);
+        mpz_clear(tmp);
+        return *this;
+    }
+
+    Integer& operator-=(long long rhs) noexcept
+    {
+        mpz_t tmp;
+        mpz_init(tmp);
+        mpz_set_int64(tmp, static_cast<int64_t>(rhs));
+        mpz_sub(value_, value_, tmp);
+        mpz_clear(tmp);
+        return *this;
+    }
+
+    Integer& operator*=(long long rhs) noexcept
+    {
+        mpz_t tmp;
+        mpz_init(tmp);
+        mpz_set_int64(tmp, static_cast<int64_t>(rhs));
+        mpz_mul(value_, value_, tmp);
+        mpz_clear(tmp);
+        return *this;
+    }
+
+    // -- Binary arithmetic: Integer x Integer -------------------------------
+
+    friend Integer operator+(Integer lhs, const Integer& rhs) noexcept
     {
         lhs += rhs;
         return lhs;
     }
 
-    friend Integer operator+(Integer lhs, long long rhs)
-    {
-        lhs += Integer(rhs);
-        return lhs;
-    }
-
-    friend Integer operator+(long long lhs, Integer rhs)
-    {
-        rhs += Integer(lhs);
-        return rhs;
-    }
-
-    friend Integer operator-(Integer lhs, const Integer& rhs)
+    friend Integer operator-(Integer lhs, const Integer& rhs) noexcept
     {
         lhs -= rhs;
         return lhs;
     }
 
-    friend Integer operator-(Integer lhs, long long rhs)
-    {
-        lhs -= Integer(rhs);
-        return lhs;
-    }
-
-    friend Integer operator-(long long lhs, const Integer& rhs)
-    {
-        Integer result(lhs);
-        result -= rhs;
-        return result;
-    }
-
-    friend Integer operator*(Integer lhs, const Integer& rhs)
+    friend Integer operator*(Integer lhs, const Integer& rhs) noexcept
     {
         lhs *= rhs;
         return lhs;
-    }
-
-    friend Integer operator*(Integer lhs, long long rhs)
-    {
-        lhs *= Integer(rhs);
-        return lhs;
-    }
-
-    friend Integer operator*(long long lhs, Integer rhs)
-    {
-        rhs *= Integer(lhs);
-        return rhs;
     }
 
     friend Integer operator/(Integer lhs, const Integer& rhs)
@@ -235,131 +335,194 @@ public:
         return lhs;
     }
 
-    friend double operator/(const Integer& lhs, double rhs)
-    {
-        return lhs.get_d() / rhs;
-    }
-
-    friend double operator/(double lhs, const Integer& rhs)
-    {
-        return lhs / rhs.get_d();
-    }
-
     friend Integer operator%(Integer lhs, const Integer& rhs)
     {
         lhs %= rhs;
         return lhs;
     }
 
-    friend bool operator==(const Integer& lhs, const Integer& rhs)
+    // -- Binary arithmetic: Integer x long long (and reverse) ---------------
+
+    friend Integer operator+(Integer lhs, long long rhs) noexcept
+    {
+        lhs += rhs;
+        return lhs;
+    }
+
+    friend Integer operator+(long long lhs, Integer rhs) noexcept
+    {
+        rhs += lhs;
+        return rhs;
+    }
+
+    friend Integer operator-(Integer lhs, long long rhs) noexcept
+    {
+        lhs -= rhs;
+        return lhs;
+    }
+
+    friend Integer operator-(long long lhs, const Integer& rhs) noexcept
+    {
+        Integer result;
+        mpz_set_int64(result.value_, static_cast<int64_t>(lhs));
+        mpz_sub(result.value_, result.value_, rhs.value_);
+        return result;
+    }
+
+    friend Integer operator*(Integer lhs, long long rhs) noexcept
+    {
+        lhs *= rhs;
+        return lhs;
+    }
+
+    friend Integer operator*(long long lhs, Integer rhs) noexcept
+    {
+        rhs *= lhs;
+        return rhs;
+    }
+
+    // -- Comparisons: Integer x Integer -------------------------------------
+
+    friend bool operator==(const Integer& lhs, const Integer& rhs) noexcept
     {
         return mpz_cmp(lhs.value_, rhs.value_) == 0;
     }
 
-    friend bool operator==(const Integer& lhs, long long rhs)
-    {
-        Integer tmp(rhs);
-        return mpz_cmp(lhs.value_, tmp.value_) == 0;
-    }
-
-    friend bool operator==(long long lhs, const Integer& rhs)
-    {
-        Integer tmp(lhs);
-        return mpz_cmp(tmp.value_, rhs.value_) == 0;
-    }
-
-    friend bool operator!=(const Integer& lhs, const Integer& rhs)
+    friend bool operator!=(const Integer& lhs, const Integer& rhs) noexcept
     {
         return mpz_cmp(lhs.value_, rhs.value_) != 0;
     }
 
-    friend bool operator!=(const Integer& lhs, long long rhs)
-    {
-        Integer tmp(rhs);
-        return mpz_cmp(lhs.value_, tmp.value_) != 0;
-    }
-
-    friend bool operator!=(long long lhs, const Integer& rhs)
-    {
-        Integer tmp(lhs);
-        return mpz_cmp(tmp.value_, rhs.value_) != 0;
-    }
-
-    friend bool operator<(const Integer& lhs, const Integer& rhs)
+    friend bool operator<(const Integer& lhs, const Integer& rhs) noexcept
     {
         return mpz_cmp(lhs.value_, rhs.value_) < 0;
     }
 
-    friend bool operator<(const Integer& lhs, long long rhs)
-    {
-        Integer tmp(rhs);
-        return mpz_cmp(lhs.value_, tmp.value_) < 0;
-    }
-
-    friend bool operator<(long long lhs, const Integer& rhs)
-    {
-        Integer tmp(lhs);
-        return mpz_cmp(tmp.value_, rhs.value_) < 0;
-    }
-
-    friend bool operator<=(const Integer& lhs, const Integer& rhs)
+    friend bool operator<=(const Integer& lhs, const Integer& rhs) noexcept
     {
         return mpz_cmp(lhs.value_, rhs.value_) <= 0;
     }
 
-    friend bool operator<=(const Integer& lhs, long long rhs)
-    {
-        Integer tmp(rhs);
-        return mpz_cmp(lhs.value_, tmp.value_) <= 0;
-    }
-
-    friend bool operator<=(long long lhs, const Integer& rhs)
-    {
-        Integer tmp(lhs);
-        return mpz_cmp(tmp.value_, rhs.value_) <= 0;
-    }
-
-    friend bool operator>(const Integer& lhs, const Integer& rhs)
+    friend bool operator>(const Integer& lhs, const Integer& rhs) noexcept
     {
         return mpz_cmp(lhs.value_, rhs.value_) > 0;
     }
 
-    friend bool operator>(const Integer& lhs, long long rhs)
-    {
-        Integer tmp(rhs);
-        return mpz_cmp(lhs.value_, tmp.value_) > 0;
-    }
-
-    friend bool operator>(long long lhs, const Integer& rhs)
-    {
-        Integer tmp(lhs);
-        return mpz_cmp(tmp.value_, rhs.value_) > 0;
-    }
-
-    friend bool operator>=(const Integer& lhs, const Integer& rhs)
+    friend bool operator>=(const Integer& lhs, const Integer& rhs) noexcept
     {
         return mpz_cmp(lhs.value_, rhs.value_) >= 0;
     }
 
-    friend bool operator>=(const Integer& lhs, long long rhs)
+    // -- Comparisons: Integer x long long (heap-free via mpz_cmp_int64) -----
+
+    friend bool operator==(const Integer& lhs, long long rhs) noexcept
     {
-        Integer tmp(rhs);
-        return mpz_cmp(lhs.value_, tmp.value_) >= 0;
+        return mpz_cmp_int64(lhs.value_, static_cast<int64_t>(rhs)) == 0;
     }
 
-    friend bool operator>=(long long lhs, const Integer& rhs)
+    friend bool operator==(long long lhs, const Integer& rhs) noexcept
     {
-        Integer tmp(lhs);
-        return mpz_cmp(tmp.value_, rhs.value_) >= 0;
+        return mpz_cmp_int64(rhs.value_, static_cast<int64_t>(lhs)) == 0;
     }
+
+    friend bool operator!=(const Integer& lhs, long long rhs) noexcept
+    {
+        return mpz_cmp_int64(lhs.value_, static_cast<int64_t>(rhs)) != 0;
+    }
+
+    friend bool operator!=(long long lhs, const Integer& rhs) noexcept
+    {
+        return mpz_cmp_int64(rhs.value_, static_cast<int64_t>(lhs)) != 0;
+    }
+
+    friend bool operator<(const Integer& lhs, long long rhs) noexcept
+    {
+        return mpz_cmp_int64(lhs.value_, static_cast<int64_t>(rhs)) < 0;
+    }
+
+    friend bool operator<(long long lhs, const Integer& rhs) noexcept
+    {
+        return mpz_cmp_int64(rhs.value_, static_cast<int64_t>(lhs)) > 0;
+    }
+
+    friend bool operator<=(const Integer& lhs, long long rhs) noexcept
+    {
+        return mpz_cmp_int64(lhs.value_, static_cast<int64_t>(rhs)) <= 0;
+    }
+
+    friend bool operator<=(long long lhs, const Integer& rhs) noexcept
+    {
+        return mpz_cmp_int64(rhs.value_, static_cast<int64_t>(lhs)) >= 0;
+    }
+
+    friend bool operator>(const Integer& lhs, long long rhs) noexcept
+    {
+        return mpz_cmp_int64(lhs.value_, static_cast<int64_t>(rhs)) > 0;
+    }
+
+    friend bool operator>(long long lhs, const Integer& rhs) noexcept
+    {
+        return mpz_cmp_int64(rhs.value_, static_cast<int64_t>(lhs)) < 0;
+    }
+
+    friend bool operator>=(const Integer& lhs, long long rhs) noexcept
+    {
+        return mpz_cmp_int64(lhs.value_, static_cast<int64_t>(rhs)) >= 0;
+    }
+
+    friend bool operator>=(long long lhs, const Integer& rhs) noexcept
+    {
+        return mpz_cmp_int64(rhs.value_, static_cast<int64_t>(lhs)) <= 0;
+    }
+
+    // -- I/O ----------------------------------------------------------------
 
     friend std::ostream& operator<<(std::ostream& out, const Integer& value)
     {
-        char* text = mpz_get_str(0, 10, value.value_);
+        // Determine base from stream format flags.
+        int base = 10;
+        std::ios_base::fmtflags flags = out.flags();
+        switch (flags & std::ios_base::basefield) {
+        case std::ios_base::hex: base = 16; break;
+        case std::ios_base::oct: base = 8;  break;
+        default:                 base = 10; break;
+        }
+
+        // GMP uses negative base for uppercase hex digits.
+        int gmp_base = (base == 16 && (flags & std::ios_base::uppercase))
+                        ? -16 : base;
+
+        // Get string representation; copy into std::string immediately
+        // and free the GMP buffer, so that no subsequent throw can leak it.
+        char* raw = mpz_get_str(nullptr, gmp_base, value.value_);
+        std::string text(raw);
+        {
+            void (*freefunc)(void*, size_t);
+            mp_get_memory_functions(nullptr, nullptr, &freefunc);
+            freefunc(raw, text.size() + 1);
+        }
+
+        // showbase prefix (insert after any leading '-').
+        if (flags & std::ios_base::showbase) {
+            std::string::size_type pos =
+                (!text.empty() && text[0] == '-') ? 1u : 0u;
+            if (base == 16) {
+                text.insert(pos,
+                    (flags & std::ios_base::uppercase) ? "0X" : "0x");
+            } else if (base == 8 && text != "0" && text != "-0") {
+                text.insert(pos, "0");
+            }
+        }
+
+        // showpos for non-negative decimal values.
+        if ((flags & std::ios_base::showpos) && base == 10
+            && mpz_sgn(value.value_) >= 0) {
+            text.insert(std::string::size_type(0), "+");
+        }
+
+        // The stream's operator<<(const std::string&) handles
+        // width, fill, and adjustment.
         out << text;
-        void (*freefunc)(void*, size_t);
-        mp_get_memory_functions(0, 0, &freefunc);
-        freefunc(text, std::strlen(text) + 1);
         return out;
     }
 
@@ -370,8 +533,17 @@ public:
         if (!in) {
             return in;
         }
-        if (mpz_set_str(value.value_, text.c_str(), 10) != 0) {
+        // Parse into a temporary to avoid corrupting value on bad input.
+        // GMP documents that mpz_set_str leaves rop in an undefined state
+        // on parse failure.
+        mpz_t tmp;
+        mpz_init(tmp);
+        if (mpz_set_str(tmp, text.c_str(), 10) != 0) {
+            mpz_clear(tmp);
             in.setstate(std::ios::failbit);
+        } else {
+            mpz_swap(value.value_, tmp);
+            mpz_clear(tmp);
         }
         return in;
     }
@@ -380,16 +552,29 @@ private:
     mpz_t value_;
 };
 
-inline void gcd(Integer& result, const Integer& a, const Integer& b)
+// ---------------------------------------------------------------------------
+// Free functions
+// ---------------------------------------------------------------------------
+
+inline void gcd(Integer& result, const Integer& a, const Integer& b) noexcept
 {
     mpz_gcd(result.get_mpz_t(), a.get_mpz_t(), b.get_mpz_t());
 }
 
-inline int calc_precision(const Integer& value)
+// Return the number of bits in the absolute value of `value` (0 for zero).
+inline int bit_length(const Integer& value) noexcept
 {
-    return mpz_sgn(value.get_mpz_t()) == 0 ? 0 : mpz_sizeinbase(value.get_mpz_t(), 2);
+    return mpz_sgn(value.get_mpz_t()) == 0
+        ? 0
+        : static_cast<int>(mpz_sizeinbase(value.get_mpz_t(), 2));
 }
 
-} // namespace _4ti2_gmp_
+// Backward-compatibility alias for bit_length.
+inline int calc_precision(const Integer& value) noexcept
+{
+    return bit_length(value);
+}
+
+} // namespace FOURTITWO_GMP_INTEGER
 
 #endif

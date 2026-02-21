@@ -88,9 +88,9 @@ inline T gcd (T a, T b)
 }
 
 #ifdef _4ti2_HAVE_GMP
-inline void gcd (_4ti2_gmp_::Integer& result, const _4ti2_gmp_::Integer& a, const _4ti2_gmp_::Integer& b)
+inline void gcd (FOURTITWO_GMP_INTEGER::Integer& result, const FOURTITWO_GMP_INTEGER::Integer& a, const FOURTITWO_GMP_INTEGER::Integer& b)
 {
-    _4ti2_gmp_::gcd(result, a, b);
+    FOURTITWO_GMP_INTEGER::gcd(result, a, b);
 }
 #endif
 
@@ -121,9 +121,9 @@ inline int calcPrecision (int64_t n)
 }
  
 #ifdef _4ti2_HAVE_GMP
-inline int calcPrecision (const _4ti2_gmp_::Integer& n)
+inline int calcPrecision (const FOURTITWO_GMP_INTEGER::Integer& n)
 {
-    return _4ti2_gmp_::calc_precision(n);
+    return FOURTITWO_GMP_INTEGER::calc_precision(n);
 }
 #endif
 
@@ -138,7 +138,7 @@ inline int maxPrecision (int64_t n)
 }
 
 #ifdef _4ti2_HAVE_GMP
-inline int maxPrecision (const _4ti2_gmp_::Integer& n)
+inline int maxPrecision (const FOURTITWO_GMP_INTEGER::Integer& n)
 {
     (void)n;
     return -1;

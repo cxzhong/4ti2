@@ -50,7 +50,7 @@ QSolveAPI::QSolveAPI()
     qhom = 0;
     qfree = 0;
 // TODO: We will need to change the next row.
-#ifdef _4ti2_GMP_
+#ifdef FOURTITWO_GMP
     algorithm = SUPPORT;
 #else
     algorithm = MATRIX;

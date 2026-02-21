@@ -37,7 +37,7 @@ CircuitOptions* CircuitOptions::o = new CircuitOptions;
 
 CircuitOptions::CircuitOptions()
 {
-#ifdef _4ti2_GMP_
+#ifdef FOURTITWO_GMP
     algorithm = SUPPORT;
 #else
     algorithm = MATRIX;

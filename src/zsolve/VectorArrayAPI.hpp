@@ -142,7 +142,7 @@ convert(const int32_t& v1, mpz_ptr& v2)
 template <>
 inline
 void
-convert(const mpz_srcptr& v1, _4ti2_gmp_::Integer& v2)
+convert(const mpz_srcptr& v1, FOURTITWO_GMP_INTEGER::Integer& v2)
 {
     v2.set_mpz(v1);
 }
@@ -150,7 +150,7 @@ convert(const mpz_srcptr& v1, _4ti2_gmp_::Integer& v2)
 template <>
 inline
 void
-convert(const _4ti2_gmp_::Integer& v1, mpz_ptr& v2)
+convert(const FOURTITWO_GMP_INTEGER::Integer& v1, mpz_ptr& v2)
 {
     mpz_set(v2, v1.get_mpz_t());
 }
@@ -158,7 +158,7 @@ convert(const _4ti2_gmp_::Integer& v1, mpz_ptr& v2)
 template <>
 inline
 void
-convert(const _4ti2_gmp_::Integer& v1, int64_t& v2)
+convert(const FOURTITWO_GMP_INTEGER::Integer& v1, int64_t& v2)
 {
     if (!mpz_fits_int64_p(v1.get_mpz_t())) {
         throw PrecisionException(0);
@@ -169,7 +169,7 @@ convert(const _4ti2_gmp_::Integer& v1, int64_t& v2)
 template <>
 inline
 void
-convert(const _4ti2_gmp_::Integer& v1, int32_t& v2)
+convert(const FOURTITWO_GMP_INTEGER::Integer& v1, int32_t& v2)
 {
     if (!mpz_fits_sint_p(v1.get_mpz_t())) {
         throw PrecisionException(0);

@@ -37,7 +37,7 @@ using namespace _4ti2_;
 
 QSolveAlgorithm::QSolveAlgorithm()
 {
-#ifdef _4ti2_GMP_
+#ifdef FOURTITWO_GMP
     variant = SUPPORT;
 #else
     variant = MATRIX; 
