@@ -105,3 +105,4 @@ test/subdirsum
 /lib/string.h
 /lib/wchar.h
 /lib/*.a
+_codeql_detected_source_root
