@@ -27,6 +27,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #include "groebner/VectorArray.h"
 #include <cstdlib>
 
+#ifdef _4ti2_HAVE_GMP
+#include "4ti2/gmp_integer.h"
+#endif
+
 namespace _4ti2_ {
 
 class VectorArrayAPI : public _4ti2_matrix {
@@ -89,8 +93,6 @@ VectorArrayAPI::convert(const int32_t& v1, int64_t& v2)
 }
 
 #ifdef _4ti2_HAVE_GMP
-
-#include "4ti2/gmp_integer.h"
 
 template <>
 inline
