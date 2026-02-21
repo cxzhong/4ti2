@@ -30,7 +30,7 @@ lib_LTLIBRARIES = lib4ti2util.la
 AM_LDFLAGS = -no-undefined
 
 # Allow accessing general 4ti2 headers and gnulib replacements
-AM_CFLAGS = -I$(srcdir)/.. -I$(top_builddir)/lib -I$(top_srcdir)/lib
+AM_CFLAGS = -D_GNU_SOURCE -I$(srcdir)/.. -I$(top_builddir)/lib -I$(top_srcdir)/lib
 
 # The output.c file contains C++-isms (or C99-isms), 
 # so compile with the C++ compiler. --mkoeppe
