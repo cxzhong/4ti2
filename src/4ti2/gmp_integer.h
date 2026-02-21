@@ -533,12 +533,19 @@ public:
         if (!in) {
             return in;
         }
+        // Decide base from stream flags.
+        int base = 10;
+        switch (in.flags() & std::ios_base::basefield) {
+        case std::ios_base::hex: base = 16; break;
+        case std::ios_base::oct: base = 8;  break;
+        default:                 base = 10; break;
+        }
         // Parse into a temporary to avoid corrupting value on bad input.
         // GMP documents that mpz_set_str leaves rop in an undefined state
         // on parse failure.
         mpz_t tmp;
         mpz_init(tmp);
-        if (mpz_set_str(tmp, text.c_str(), 10) != 0) {
+        if (mpz_set_str(tmp, text.c_str(), base) != 0) {
             mpz_clear(tmp);
             in.setstate(std::ios::failbit);
         } else {
