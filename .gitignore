@@ -97,7 +97,6 @@ test/ppi/ppi5.gra.srt.chk
 test/ppi/ppi5.mat
 test/reportfailures
 test/subdirsum
-_codeql_detected_source_root
 /lib/alloca.h
 /lib/inttypes.h
 /lib/limits.h
