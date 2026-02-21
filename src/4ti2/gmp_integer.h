@@ -151,10 +151,8 @@ public:
 
     Integer(Integer&& other) noexcept
     {
-        // Steal the mpz_t internals.
-        value_[0] = other.value_[0];
-        // Leave other in a valid empty state.
-        mpz_init(other.value_);
+        mpz_init(value_);
+        mpz_swap(value_, other.value_);
     }
 
     Integer& operator=(const Integer& other) noexcept
