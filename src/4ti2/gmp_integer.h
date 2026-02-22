@@ -19,8 +19,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 */
 
-#ifndef FOURTITWO_GMP_INTEGER_H
-#define FOURTITWO_GMP_INTEGER_H
+#ifndef _4ti2_GMP_INTEGER_H
+#define _4ti2_GMP_INTEGER_H
 
 #include <gmp.h>
 #include <climits>
@@ -112,7 +112,7 @@ inline int mpz_cmp_int64(mpz_srcptr z, int64_t v)
     return result;
 }
 
-namespace FOURTITWO_GMP_INTEGER
+namespace _4ti2_GMP_INTEGER
 {
 
 class Integer
@@ -260,7 +260,7 @@ public:
     Integer& operator/=(const Integer& rhs)
     {
         if (mpz_sgn(rhs.value_) == 0) {
-            throw std::domain_error("FOURTITWO_GMP_INTEGER::Integer: division by zero");
+            throw std::domain_error("_4ti2_GMP_INTEGER::Integer: division by zero");
         }
         mpz_tdiv_q(value_, value_, rhs.value_);
         return *this;
@@ -269,7 +269,7 @@ public:
     Integer& operator%=(const Integer& rhs)
     {
         if (mpz_sgn(rhs.value_) == 0) {
-            throw std::domain_error("FOURTITWO_GMP_INTEGER::Integer: division by zero");
+            throw std::domain_error("_4ti2_GMP_INTEGER::Integer: division by zero");
         }
         mpz_tdiv_r(value_, value_, rhs.value_);
         return *this;
@@ -580,6 +580,6 @@ inline int calc_precision(const Integer& value) noexcept
     return bit_length(value);
 }
 
-} // namespace FOURTITWO_GMP_INTEGER
+} // namespace _4ti2_GMP_INTEGER
 
 #endif

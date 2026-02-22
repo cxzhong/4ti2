@@ -40,7 +40,7 @@ extern "C" {
 }
 
 // TODO: Fix this up.
-#ifdef FOURTITWO_GMP
+#ifdef _4ti2_GMP_
   #define DOUBLE(X) X.get_d()
   #define TO_RATIONAL(X) RationalType(X)
 #else

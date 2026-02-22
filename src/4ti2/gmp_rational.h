@@ -19,8 +19,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 */
 
-#ifndef FOURTITWO_GMP_RATIONAL_H
-#define FOURTITWO_GMP_RATIONAL_H
+#ifndef _4ti2_GMP_RATIONAL_H
+#define _4ti2_GMP_RATIONAL_H
 
 #include <gmp.h>
 #include <cstring>
@@ -29,7 +29,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 #include "4ti2/gmp_integer.h"
 
-namespace FOURTITWO_GMP_RATIONAL
+namespace _4ti2_GMP_RATIONAL
 {
 
 // Minimal exact rational type wrapping mpq_t (GMP C API).
@@ -74,7 +74,7 @@ public:
 
     // Construct from GMP Integer (exact: sets value to integer/1).
     // NOLINTNEXTLINE(google-explicit-constructor)
-    Rational(const FOURTITWO_GMP_INTEGER::Integer& value) noexcept
+    Rational(const _4ti2_GMP_INTEGER::Integer& value) noexcept
     {
         mpq_init(value_);
         mpq_set_z(value_, value.get_mpz_t());
@@ -175,7 +175,7 @@ public:
         if (mpq_sgn(rhs.value_) == 0)
         {
             throw std::domain_error(
-                "FOURTITWO_GMP_RATIONAL::Rational: division by zero");
+                "_4ti2_GMP_RATIONAL::Rational: division by zero");
         }
         Rational result;
         mpq_div(result.value_, lhs.value_, rhs.value_);
@@ -233,6 +233,6 @@ private:
     mpq_t value_;
 };
 
-} // namespace FOURTITWO_GMP_RATIONAL
+} // namespace _4ti2_GMP_RATIONAL
 
 #endif

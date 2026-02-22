@@ -299,9 +299,9 @@ lib4ti2int64_la_SOURCES = $(lib4ti2sources)
 # 4ti2 uses GMP (GLPL), an arbitrary precision arithmetic library.
 if HAVE_GMP
 4ti2gmp_LDADD = lib4ti2gmp.la
-4ti2gmp_CPPFLAGS = -DFOURTITWO_GMP $(GMP_CFLAGS)
+4ti2gmp_CPPFLAGS = -D_4ti2_GMP_ $(GMP_CFLAGS)
 4ti2gmp_SOURCES = $(4ti2sources)
-lib4ti2gmp_la_CPPFLAGS = -DFOURTITWO_GMP
+lib4ti2gmp_la_CPPFLAGS = -D_4ti2_GMP_
 lib4ti2gmp_la_CPPFLAGS += $(GMP_CFLAGS)
 lib4ti2gmp_la_SOURCES = $(lib4ti2sources)
 endif

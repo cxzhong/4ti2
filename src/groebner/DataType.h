@@ -26,12 +26,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 #include "4ti2/4ti2_config.h"
 
-#ifdef FOURTITWO_GMP
+#ifdef _4ti2_GMP_
 
 #include "4ti2/gmp_integer.h"
 #include "4ti2/gmp_rational.h"
-typedef FOURTITWO_GMP_INTEGER::Integer IntegerType;
-typedef FOURTITWO_GMP_RATIONAL::Rational RationalType;
+typedef _4ti2_GMP_INTEGER::Integer IntegerType;
+typedef _4ti2_GMP_RATIONAL::Rational RationalType;
 
 #elif defined(_4ti2_INT64_)
 

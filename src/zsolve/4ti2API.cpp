@@ -43,7 +43,7 @@ _4ti2_zsolve_create_state(_4ti2_precision prec)
     case _4ti2_PREC_INT_64:
         return new ZSolveAPI<int64_t>();
     case _4ti2_PREC_INT_ARB:
-        return new ZSolveAPI<FOURTITWO_GMP_INTEGER::Integer>();
+        return new ZSolveAPI<_4ti2_GMP_INTEGER::Integer>();
     default: 
         std::cerr << "ERROR: Undefined precision.\n";
         exit(1);
@@ -59,7 +59,7 @@ _4ti2_hilbert_create_state(_4ti2_precision prec)
     case _4ti2_PREC_INT_64:
         return new HilbertAPI<int64_t>();
     case _4ti2_PREC_INT_ARB:
-        return new HilbertAPI<FOURTITWO_GMP_INTEGER::Integer>();
+        return new HilbertAPI<_4ti2_GMP_INTEGER::Integer>();
     default: 
         std::cerr << "ERROR: Undefined precision.\n";
         exit(1);
@@ -75,7 +75,7 @@ _4ti2_graver_create_state(_4ti2_precision prec)
     case _4ti2_PREC_INT_64:
         return new GraverAPI<int64_t>();
     case _4ti2_PREC_INT_ARB:
-        return new GraverAPI<FOURTITWO_GMP_INTEGER::Integer>();
+        return new GraverAPI<_4ti2_GMP_INTEGER::Integer>();
     default: 
         std::cerr << "ERROR: Undefined precision.\n";
         exit(1);

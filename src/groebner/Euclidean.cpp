@@ -29,7 +29,7 @@ _4ti2_::euclidean(
                 IntegerType b,
                 IntegerType& g0)
 {
-#ifdef FOURTITWO_GMP
+#ifdef _4ti2_GMP_
     mpz_gcd(g0.get_mpz_t(), a.get_mpz_t(), b.get_mpz_t());
 #else
     IntegerType tmp;

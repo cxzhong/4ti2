@@ -55,7 +55,7 @@ _4ti2_::print_banner(bool warn)
 	     << "WARNING: by using the option `-parb'\n";
     }
 # endif
-#elif defined(FOURTITWO_GMP)
+#elif defined(_4ti2_GMP_)
     *out << "Using arbitrary precision integers.\n";
 #endif
 }
