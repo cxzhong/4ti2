@@ -32,6 +32,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #include <gmp.h>
 #endif
 
+#ifdef _4ti2_HAVE_GMPXX
+#include <gmpxx.h>
+#endif
+
 struct _4ti2_matrix {
 public:
     _4ti2_matrix() {}
@@ -57,8 +61,7 @@ public:
     // -----------------------------------------------------------------------
     // mpz_class forwarding adapters (backward-compatibility shims).
     //
-    // Available only when the caller has already included <gmpxx.h>.
-    // The header itself does NOT include <gmpxx.h>.
+    // Available when configure detected gmpxx.h (_4ti2_HAVE_GMPXX).
     //
     // Semantic contract:
     //   - The library never takes ownership of mpz_class objects.
@@ -67,7 +70,7 @@ public:
     //   - mpz_class is treated as an opaque value carrier; only
     //     get_mpz_t() is used to extract the underlying mpz_t.
     // -----------------------------------------------------------------------
-#if defined(_4ti2_HAVE_GMP) && defined(__GMP_PLUSPLUS__)
+#ifdef _4ti2_HAVE_GMPXX
     void set_entry_mpz_class(int r, int c, const mpz_class& value) {
         set_entry_mpz_ptr(r, c, value.get_mpz_t());
     }

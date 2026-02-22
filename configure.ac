@@ -127,6 +127,21 @@ if test -n "${GMP_LIBS}" ; then
   AC_DEFINE([_4ti2_HAVE_GMP], [], [Define if GMP C library is installed])
   AC_DEFINE([_4ti2_HAVE_MPZ_INT32_CONVERSION], [1], [Define if we can convert between int32_t and GMP integers])
   AC_DEFINE([_4ti2_HAVE_MPZ_INT64_CONVERSION], [1], [Define if we can convert between int64_t and GMP integers])
+
+  # Check for GMP C++ header (gmpxx.h)
+  BACKUP_CXXFLAGS_GMPXX=${CXXFLAGS}
+  BACKUP_LIBS_GMPXX=${LIBS}
+  CXXFLAGS="${CXXFLAGS} ${GMP_CFLAGS}"
+  LIBS="${LIBS} ${GMP_LIBS} -lgmpxx"
+  AC_MSG_CHECKING([for gmpxx.h])
+  AC_COMPILE_IFELSE(
+    [AC_LANG_PROGRAM([[#include <gmpxx.h>]],
+                     [[mpz_class x(42);]])],
+    [AC_MSG_RESULT([yes])
+     AC_DEFINE([_4ti2_HAVE_GMPXX], [1], [Define if GMP C++ header gmpxx.h is available])],
+    [AC_MSG_RESULT([no])])
+  CXXFLAGS=${BACKUP_CXXFLAGS_GMPXX}
+  LIBS=${BACKUP_LIBS_GMPXX}
 fi
 
 GROEBNER_DEFAULT_EXECUTABLE=4ti2int64
