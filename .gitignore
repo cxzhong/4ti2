@@ -105,12 +105,3 @@ test/subdirsum
 /lib/string.h
 /lib/wchar.h
 /lib/*.a
-_codeql_detected_source_root
-test-suite.log
-*.trs
-test/zsolve/api/test_zsolve_api
-test/qsolve/api/qsolve_main
-test/qsolve/api/rays_main
-test/qsolve/api/circuits_main
-test/qsolve/api/test_input_conversion_64_to_gmp
-test/qsolve/api/test_input_conversion_gmp_to_64
