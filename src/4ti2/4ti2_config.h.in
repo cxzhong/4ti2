@@ -1,4 +1,4 @@
-/* Define if GMP (with C++ interface) is installed */
+/* Define if GMP C library is installed */
 #undef _4ti2_HAVE_GMP
 
 /* Define if we can convert between int32_t and GMP integers (mpz_t) */
