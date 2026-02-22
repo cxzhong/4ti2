@@ -1,8 +1,11 @@
-/* Define if GMP (with C++ interface) is installed */
+/* Define if GMP C library is installed */
 #undef _4ti2_HAVE_GMP
 
-/* Define if we can convert between int32_t and mpz_class */
+/* Define if GMP C++ header gmpxx.h is available */
+#undef _4ti2_HAVE_GMPXX
+
+/* Define if we can convert between int32_t and GMP integers (mpz_t) */
 #undef _4ti2_HAVE_MPZ_INT32_CONVERSION
 
-/* Define if we can convert between int64_t and mpz_class */
+/* Define if we can convert between int64_t and GMP integers (mpz_t) */
 #undef _4ti2_HAVE_MPZ_INT64_CONVERSION
